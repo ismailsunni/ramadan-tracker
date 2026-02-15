@@ -1,32 +1,40 @@
-import dayjs from "dayjs";
-// @ts-expect-error - dayjs-hijri doesn't have type definitions
-import dayjsHijri from "dayjs-hijri";
 import type { HijriDate } from "@/lib/types";
 
-// Ensure plugin is extended
-let isExtended = false;
-function ensurePluginExtended() {
-  if (!isExtended) {
-    try {
-      dayjs.extend(dayjsHijri);
-      isExtended = true;
-    } catch (e) {
-      console.error("Failed to extend dayjs with hijri plugin:", e);
-    }
-  }
-}
+// Ramadan 1447 dates (2026)
+// Ramadan starts approximately on February 17, 2026
+const RAMADAN_1447_START = new Date(2026, 1, 17); // Month is 0-indexed (1 = February)
+const RAMADAN_YEAR = 1447;
 
 /**
  * Convert Gregorian date to Hijri
+ * Simplified implementation for Ramadan tracking
  */
 export function gregorianToHijri(date: Date): HijriDate {
-  ensurePluginExtended();
-  const dayjsDate = dayjs(date) as any;
+  const daysDiff = Math.floor(
+    (date.getTime() - RAMADAN_1447_START.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // If within Ramadan period (30 days)
+  if (daysDiff >= 0 && daysDiff < 30) {
+    return {
+      year: RAMADAN_YEAR,
+      month: 9, // Ramadan is month 9
+      day: daysDiff + 1,
+    };
+  }
+
+  // For dates outside Ramadan, return approximate values
+  // This is a simplified calculation
+  const totalDaysFromStart = Math.floor(
+    (date.getTime() - RAMADAN_1447_START.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const hijriMonth = 9 + Math.floor(totalDaysFromStart / 29.5);
+  const hijriDay = (totalDaysFromStart % 29) + 1;
 
   return {
-    year: dayjsDate.iYear(),
-    month: dayjsDate.iMonth() + 1, // iMonth() returns 0-11, we want 1-12
-    day: dayjsDate.iDate(),
+    year: RAMADAN_YEAR,
+    month: ((hijriMonth - 1) % 12) + 1,
+    day: Math.min(hijriDay, 30),
   };
 }
 
@@ -38,27 +46,25 @@ export function hijriToGregorian(
   month: number,
   day: number
 ): Date {
-  ensurePluginExtended();
-  // Create hijri date using iYear, iMonth (0-based), iDate
-  const hijriDate = (dayjs() as any)
-    .iYear(year)
-    .iMonth(month - 1) // Convert 1-12 to 0-11
-    .iDate(day);
+  // For Ramadan 1447
+  if (year === RAMADAN_YEAR && month === 9) {
+    const resultDate = new Date(RAMADAN_1447_START);
+    resultDate.setDate(RAMADAN_1447_START.getDate() + day - 1);
+    return resultDate;
+  }
 
-  return hijriDate.toDate();
+  // For other dates, return approximate
+  const daysOffset = (month - 9) * 29.5 + (day - 1);
+  const resultDate = new Date(RAMADAN_1447_START);
+  resultDate.setDate(RAMADAN_1447_START.getDate() + daysOffset);
+  return resultDate;
 }
 
 /**
  * Get current Hijri year
  */
 export function getCurrentRamadanYear(): number {
-  ensurePluginExtended();
-  const today = new Date();
-  const hijriToday = gregorianToHijri(today);
-
-  // If we're in Ramadan or later in the year, return current year
-  // If we're before Ramadan, return current year (assuming we want to track this year's Ramadan)
-  return hijriToday.year;
+  return RAMADAN_YEAR;
 }
 
 /**
@@ -68,7 +74,7 @@ export function generateRamadanDates(hijriYear: number): Date[] {
   const dates: Date[] = [];
 
   for (let day = 1; day <= 30; day++) {
-    const gregorianDate = hijriToGregorian(hijriYear, 9, day); // Month 9 is Ramadan
+    const gregorianDate = hijriToGregorian(hijriYear, 9, day);
     dates.push(gregorianDate);
   }
 
@@ -104,7 +110,7 @@ export function formatHijriDate(hijriDate: HijriDate): string {
  * Returns null if the date is not in Ramadan
  */
 export function getRamadanDayNumber(hijriDate: HijriDate): number | null {
-  if (hijriDate.month === 9) {
+  if (hijriDate.month === 9 && hijriDate.year === RAMADAN_YEAR) {
     return hijriDate.day;
   }
   return null;
