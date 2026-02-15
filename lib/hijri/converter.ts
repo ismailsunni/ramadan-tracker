@@ -1,17 +1,31 @@
 import type { HijriDate } from "@/lib/types";
 
-// Ramadan 1447 dates (2026)
-// Ramadan starts approximately on February 17, 2026
-const RAMADAN_1447_START = new Date(2026, 1, 17); // Month is 0-indexed (1 = February)
+// Default Ramadan 1447 start date (can be overridden)
+const DEFAULT_RAMADAN_START = "2026-02-18"; // 1 Ramadan 1447
 const RAMADAN_YEAR = 1447;
 
 /**
- * Convert Gregorian date to Hijri
- * Simplified implementation for Ramadan tracking
+ * Parse date string to Date object
  */
-export function gregorianToHijri(date: Date): HijriDate {
+function parseDate(dateString: string): Date {
+  const date = new Date(dateString);
+  // Set to start of day to avoid timezone issues
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+/**
+ * Convert Gregorian date to Hijri
+ * @param date - Gregorian date to convert
+ * @param ramadanStartDate - Optional custom Ramadan start date (YYYY-MM-DD)
+ */
+export function gregorianToHijri(date: Date, ramadanStartDate?: string): HijriDate {
+  const startDate = parseDate(ramadanStartDate || DEFAULT_RAMADAN_START);
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
+
   const daysDiff = Math.floor(
-    (date.getTime() - RAMADAN_1447_START.getTime()) / (1000 * 60 * 60 * 24)
+    (targetDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
   // If within Ramadan period (30 days)
@@ -24,10 +38,7 @@ export function gregorianToHijri(date: Date): HijriDate {
   }
 
   // For dates outside Ramadan, return approximate values
-  // This is a simplified calculation
-  const totalDaysFromStart = Math.floor(
-    (date.getTime() - RAMADAN_1447_START.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const totalDaysFromStart = daysDiff;
   const hijriMonth = 9 + Math.floor(totalDaysFromStart / 29.5);
   const hijriDay = (totalDaysFromStart % 29) + 1;
 
@@ -40,23 +51,30 @@ export function gregorianToHijri(date: Date): HijriDate {
 
 /**
  * Convert Hijri date to Gregorian
+ * @param year - Hijri year
+ * @param month - Hijri month
+ * @param day - Hijri day
+ * @param ramadanStartDate - Optional custom Ramadan start date (YYYY-MM-DD)
  */
 export function hijriToGregorian(
   year: number,
   month: number,
-  day: number
+  day: number,
+  ramadanStartDate?: string
 ): Date {
+  const startDate = parseDate(ramadanStartDate || DEFAULT_RAMADAN_START);
+
   // For Ramadan 1447
   if (year === RAMADAN_YEAR && month === 9) {
-    const resultDate = new Date(RAMADAN_1447_START);
-    resultDate.setDate(RAMADAN_1447_START.getDate() + day - 1);
+    const resultDate = new Date(startDate);
+    resultDate.setDate(startDate.getDate() + day - 1);
     return resultDate;
   }
 
   // For other dates, return approximate
   const daysOffset = (month - 9) * 29.5 + (day - 1);
-  const resultDate = new Date(RAMADAN_1447_START);
-  resultDate.setDate(RAMADAN_1447_START.getDate() + daysOffset);
+  const resultDate = new Date(startDate);
+  resultDate.setDate(startDate.getDate() + daysOffset);
   return resultDate;
 }
 
@@ -68,13 +86,15 @@ export function getCurrentRamadanYear(): number {
 }
 
 /**
- * Generate array of Gregorian dates for all 30 days of Ramadan in a given Hijri year
+ * Generate array of Gregorian dates for all 30 days of Ramadan
+ * @param hijriYear - Hijri year
+ * @param ramadanStartDate - Optional custom Ramadan start date (YYYY-MM-DD)
  */
-export function generateRamadanDates(hijriYear: number): Date[] {
+export function generateRamadanDates(hijriYear: number, ramadanStartDate?: string): Date[] {
   const dates: Date[] = [];
 
   for (let day = 1; day <= 30; day++) {
-    const gregorianDate = hijriToGregorian(hijriYear, 9, day);
+    const gregorianDate = hijriToGregorian(hijriYear, 9, day, ramadanStartDate);
     dates.push(gregorianDate);
   }
 

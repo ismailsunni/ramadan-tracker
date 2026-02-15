@@ -55,8 +55,41 @@ export function TargetForm({ initialTarget, onSave }: TargetFormProps) {
     }
   };
 
+  const handleDateChange = (value: string) => {
+    setTarget((prev) => ({
+      ...prev,
+      ramadan_start_date: value,
+    }));
+    setErrors([]);
+    setSaveMessage("");
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Ramadan Start Date</CardTitle>
+          <CardDescription>
+            Set the first day of Ramadan (1 Ramadan 1447)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="ramadan_start">First Day of Ramadan</Label>
+            <Input
+              id="ramadan_start"
+              type="date"
+              value={target.ramadan_start_date}
+              onChange={(e) => handleDateChange(e.target.value)}
+              className="max-w-xs"
+            />
+            <p className="text-xs text-muted-foreground">
+              Example: 1 Ramadan 1447 = February 18, 2026
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Wajib Prayer Target</CardTitle>

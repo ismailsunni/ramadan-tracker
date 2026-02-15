@@ -40,6 +40,7 @@ export interface Target {
   tahajjud_target: number;
   tarawih_target: number;
   witir_target: number;
+  ramadan_start_date: string; // ISO date string (YYYY-MM-DD)
 }
 
 // Progress calculation result

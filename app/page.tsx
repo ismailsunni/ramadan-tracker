@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { getCurrentRamadanDay } from "@/lib/hijri/utils";
 import { getCurrentRamadanYear } from "@/lib/hijri/converter";
-import { getDayRecord, upsertDayRecord, createEmptyDayRecord } from "@/lib/db/operations";
+import { getDayRecord, upsertDayRecord, createEmptyDayRecord, getTarget } from "@/lib/db/operations";
 import { hijriToGregorian } from "@/lib/hijri/converter";
 import type { DayRecord } from "@/lib/types";
 import { HijriDateDisplay } from "@/components/dashboard/HijriDateDisplay";
@@ -19,12 +19,17 @@ export default function Home() {
   const [currentDay, setCurrentDay] = useState(1);
   const [currentYear, setCurrentYear] = useState(1447);
 
+  // Load target settings (including Ramadan start date)
+  const target = useLiveQuery(() => getTarget(), []);
+
   // Only run Hijri calculations on client side after mount
   useEffect(() => {
-    setCurrentDay(getCurrentRamadanDay() || 1);
-    setCurrentYear(getCurrentRamadanYear());
-    setIsMounted(true);
-  }, []);
+    if (target) {
+      setCurrentDay(getCurrentRamadanDay(target.ramadan_start_date) || 1);
+      setCurrentYear(getCurrentRamadanYear());
+      setIsMounted(true);
+    }
+  }, [target]);
 
   // Load day record from database
   const dayRecord = useLiveQuery(
@@ -38,20 +43,20 @@ export default function Home() {
 
   // Initialize local record when dayRecord loads
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || !target) return;
 
     if (dayRecord) {
       setLocalRecord(dayRecord);
     } else if (currentDay && currentYear) {
       // Create empty record if doesn't exist
-      const gregorianDate = hijriToGregorian(currentYear, 9, currentDay);
+      const gregorianDate = hijriToGregorian(currentYear, 9, currentDay, target.ramadan_start_date);
       const emptyRecord = createEmptyDayRecord(
         currentDay,
         gregorianDate.toISOString().split("T")[0]
       );
       setLocalRecord(emptyRecord as DayRecord);
     }
-  }, [dayRecord, currentDay, currentYear, isMounted]);
+  }, [dayRecord, currentDay, currentYear, isMounted, target]);
 
   const handleSave = async () => {
     if (!localRecord) return;

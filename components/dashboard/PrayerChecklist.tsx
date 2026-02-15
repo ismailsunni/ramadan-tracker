@@ -5,12 +5,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Prayer order: Maghrib to Maghrib (Islamic day starts at sunset)
 const PRAYER_NAMES: { key: PrayerName; label: string }[] = [
+  { key: "maghrib", label: "Maghrib" },
+  { key: "isha", label: "Isha" },
   { key: "fajr", label: "Fajr" },
   { key: "dhuhr", label: "Dhuhr" },
   { key: "asr", label: "Asr" },
-  { key: "maghrib", label: "Maghrib" },
-  { key: "isha", label: "Isha" },
 ];
 
 interface PrayerChecklistProps {
@@ -24,11 +25,21 @@ export function PrayerChecklist({ prayers, onChange }: PrayerChecklistProps) {
     field: "done" | "in_mosque" | "jamaah",
     checked: boolean
   ) => {
+    const currentPrayer = prayers[prayerName];
+
+    // Auto-check "done" when mosque or jamaah is checked
+    const shouldAutoDone =
+      (field === "in_mosque" || field === "jamaah") &&
+      checked &&
+      !currentPrayer.done;
+
     const updatedPrayers = {
       ...prayers,
       [prayerName]: {
-        ...prayers[prayerName],
+        ...currentPrayer,
         [field]: checked,
+        // Auto-check done if mosque or jamaah is being checked
+        done: shouldAutoDone ? true : currentPrayer.done,
       },
     };
     onChange(updatedPrayers);

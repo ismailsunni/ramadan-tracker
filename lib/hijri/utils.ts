@@ -2,18 +2,21 @@ import { gregorianToHijri, getRamadanDayNumber } from "./converter";
 
 /**
  * Check if a Gregorian date is in Ramadan
+ * @param date - Date to check
+ * @param ramadanStartDate - Optional custom Ramadan start date
  */
-export function isRamadan(date: Date): boolean {
-  const hijriDate = gregorianToHijri(date);
+export function isRamadan(date: Date, ramadanStartDate?: string): boolean {
+  const hijriDate = gregorianToHijri(date, ramadanStartDate);
   return hijriDate.month === 9;
 }
 
 /**
  * Get current Ramadan day (1-30) if today is in Ramadan, otherwise null
+ * @param ramadanStartDate - Optional custom Ramadan start date
  */
-export function getCurrentRamadanDay(): number | null {
+export function getCurrentRamadanDay(ramadanStartDate?: string): number | null {
   const today = new Date();
-  const hijriDate = gregorianToHijri(today);
+  const hijriDate = gregorianToHijri(today, ramadanStartDate);
   return getRamadanDayNumber(hijriDate);
 }
 
