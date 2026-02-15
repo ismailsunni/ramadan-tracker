@@ -23,6 +23,12 @@ const withPWA = withPWAInit({
 });
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  output: 'export',
+  basePath: '/ramadan-tracker',
+  images: {
+    unoptimized: true,
+  },
+};
 
 export default withPWA(nextConfig);
