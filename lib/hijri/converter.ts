@@ -3,13 +3,24 @@ import dayjs from "dayjs";
 import dayjsHijri from "dayjs-hijri";
 import type { HijriDate } from "@/lib/types";
 
-// Extend dayjs with hijri plugin
-dayjs.extend(dayjsHijri);
+// Ensure plugin is extended
+let isExtended = false;
+function ensurePluginExtended() {
+  if (!isExtended) {
+    try {
+      dayjs.extend(dayjsHijri);
+      isExtended = true;
+    } catch (e) {
+      console.error("Failed to extend dayjs with hijri plugin:", e);
+    }
+  }
+}
 
 /**
  * Convert Gregorian date to Hijri
  */
 export function gregorianToHijri(date: Date): HijriDate {
+  ensurePluginExtended();
   const dayjsDate = dayjs(date) as any;
 
   return {
@@ -27,6 +38,7 @@ export function hijriToGregorian(
   month: number,
   day: number
 ): Date {
+  ensurePluginExtended();
   // Create hijri date using iYear, iMonth (0-based), iDate
   const hijriDate = (dayjs() as any)
     .iYear(year)
@@ -40,6 +52,7 @@ export function hijriToGregorian(
  * Get current Hijri year
  */
 export function getCurrentRamadanYear(): number {
+  ensurePluginExtended();
   const today = new Date();
   const hijriToday = gregorianToHijri(today);
 
