@@ -24,8 +24,11 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
-  basePath: '/ramadan-tracker',
+  // Only use static export in production (for GitHub Pages)
+  ...(process.env.NODE_ENV === 'production' && {
+    output: 'export',
+    basePath: '/ramadan-tracker',
+  }),
   images: {
     unoptimized: true,
   },
