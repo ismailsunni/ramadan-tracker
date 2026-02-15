@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { DatabaseInitializer } from "@/components/DatabaseInitializer";
+import { Navigation } from "@/components/layout/Navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <DatabaseInitializer />
         {children}
+        <Navigation />
       </body>
     </html>
   );
