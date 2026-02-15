@@ -1,15 +1,16 @@
 import dayjs from "dayjs";
-import hijri from "dayjs-hijri";
+// @ts-expect-error - dayjs-hijri doesn't have type definitions
+import dayjsHijri from "dayjs-hijri";
 import type { HijriDate } from "@/lib/types";
 
 // Extend dayjs with hijri plugin
-dayjs.extend(hijri);
+dayjs.extend(dayjsHijri);
 
 /**
  * Convert Gregorian date to Hijri
  */
 export function gregorianToHijri(date: Date): HijriDate {
-  const dayjsDate = dayjs(date);
+  const dayjsDate = dayjs(date) as any;
 
   return {
     year: dayjsDate.iYear(),
@@ -27,7 +28,7 @@ export function hijriToGregorian(
   day: number
 ): Date {
   // Create hijri date using iYear, iMonth (0-based), iDate
-  const hijriDate = dayjs()
+  const hijriDate = (dayjs() as any)
     .iYear(year)
     .iMonth(month - 1) // Convert 1-12 to 0-11
     .iDate(day);
