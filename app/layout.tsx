@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { DatabaseInitializer } from "@/components/DatabaseInitializer";
@@ -8,13 +8,22 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Ramadan Tracker",
   description: "Track your worship activities during Ramadan",
-  themeColor: "#10b981",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Ramadan Tracker",
   },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#10b981",
 };
 
 export default function RootLayout({
